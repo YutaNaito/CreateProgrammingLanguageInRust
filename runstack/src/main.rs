@@ -61,6 +61,23 @@ fn div(stack: &mut Vec<i32>){
 fn parsed_block<'src, 'a>(input: &'a[&'src str],) -> (Value<'src>, &'a[&'src str]) {
     let mut tokens = vec![];
     let mut words = input;
-    // TODO: implement logic
-    words;
+    
+    while let Some((&word, mut rest)) = words.split_first() {
+        if word.is_empty() {
+            break;
+        }
+        if word == "{" {
+            let value;
+            (value, rest) = parse_block(rest);
+            tokens.push(value);
+        } else if word == "}" {
+            return (Value::Block(tokens), rest);
+        } else if Ok(value) = word.parse::<i32>() {
+            tokens.push(Value::Num(value));
+        } else {
+            tokens.push(Value::Op(word))
+        }
+        words = rest;
+    }
+    (Value::Block(tokens), words)
 }
