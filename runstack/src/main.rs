@@ -1,7 +1,7 @@
 #[derive(Debug, PartialEq, Eq)]
 enum Value<'src> {
     Num(i32),
-    Op(&'src, str)
+    Op(&'src str),
     Block(Vec<Value<'src>>),
 }
 
@@ -13,10 +13,10 @@ fn main() {
         if let Ok(line) = line {
             let words: Vec<_> = line.split(" ").collect();
             
-            while let Some((&words, mut rest)) = words.split_first() {
-                if words == "{" {
+            while let Some((&word, mut rest)) = words.split_first() {
+                if word == "{" {
                     let value;
-                    (value, rest) = parse_block(rest)
+                    (value, rest) = parse_block(rest);
                     stack.push(value);
                 }else{
                     match word {
@@ -24,7 +24,7 @@ fn main() {
                         "-" => sub(&mut stack),
                         "*" => mul(&mut stack),
                         "/" => div(&mut stack),
-                        _ => panic!("{word:?} could not be parsed")
+                        _ => panic!("{word:?} could not be parsed"),
                     }
                 }
             }
@@ -34,31 +34,40 @@ fn main() {
     }
 }
 
+impl<'src> Value<'src> {
+    fn as_num(&self) -> i32 {
+        match self {
+            Self::Num(val) => *val,
+            _ => panic!("Value is not number")  
+        }
+    }
+}
+
 fn add(stack: &mut Vec<i32>){
-    let lhs = stack.pop().unwrap();
-    let rhs = stack.pop().unwrap();
+    let lhs = stack.pop().unwrap().as_num();
+    let rhs = stack.pop().unwrap().as_num();
     stack.push(lhs + rhs);
 }
 
 fn sub(stack: &mut Vec<i32>){
-    let lhs = stack.pop().unwrap();
-    let rhs = stack.pop().unwrap();
+    let lhs = stack.pop().unwrap().as_num();
+    let rhs = stack.pop().unwrap().as_num();
     stack.push(lhs - rhs);
 }
 
 fn mul(stack: &mut Vec<i32>){
-    let lhs = stack.pop().unwrap();
-    let rhs = stack.pop().unwrap();
+    let lhs = stack.pop().unwrap().as_num();
+    let rhs = stack.pop().unwrap().as_num();
     stack.push(lhs * rhs);
 }
 
 fn div(stack: &mut Vec<i32>){
-    let lhs = stack.pop().unwrap();
-    let rhs = stack.pop().unwrap();
+    let lhs = stack.pop().unwrap().as_num();
+    let rhs = stack.pop().unwrap().as_num();
     stack.push(lhs / rhs);
 }
 
-fn parsed_block<'src, 'a>(input: &'a[&'src str],) -> (Value<'src>, &'a[&'src str]) {
+fn parse_block<'src, 'a>(input: &'a[&'src str],) -> (Value<'src>, &'a[&'src str]) {
     let mut tokens = vec![];
     let mut words = input;
     
